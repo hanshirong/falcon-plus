@@ -60,14 +60,14 @@ func main() {
 	cron.InitSenderWorker()
 
 	go http.Start()
-	go cron.ReadHighEvent()
-	go cron.ReadLowEvent()
-	go cron.CombineSms()
-	go cron.CombineMail()
-	go cron.CombineIM()
-	go cron.ConsumeIM()
-	go cron.ConsumeSms()
-	go cron.ConsumeMail()
+	go cron.ReadHighEvent() //处理高优先级事件
+	go cron.ReadLowEvent() //处理低优先级事件
+	go cron.CombineSms() //合并SMS内容
+	go cron.CombineMail() //合并Mail
+	go cron.CombineIM() //合并IM
+	go cron.ConsumeIM() //发送事件IM
+	go cron.ConsumeSms() //发送SMS
+	go cron.ConsumeMail() //发送Mail
 	go cron.CleanExpiredEvent()
 
 	sigs := make(chan os.Signal, 1)
