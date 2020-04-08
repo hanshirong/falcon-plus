@@ -23,26 +23,26 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/alarm/g"
 	"github.com/open-falcon/falcon-plus/modules/alarm/redi"
 )
-
+//处理事件
 func consume(event *cmodel.Event, isHigh bool) {
-	actionId := event.ActionId()
+	actionId := event.ActionId()//事件触发执行动作ID
 	if actionId <= 0 {
 		return
 	}
 
-	action := api.GetAction(actionId)
+	action := api.GetAction(actionId) //查询API获取action
 	if action == nil {
 		return
 	}
 
-	if action.Callback == 1 {
-		HandleCallback(event, action)
+	if action.Callback == 1 {	//是否设置callback
+		HandleCallback(event, action)//callback处理
 	}
 
 	if isHigh {
-		consumeHighEvents(event, action)
+		consumeHighEvents(event, action) //处理高优先级事件
 	} else {
-		consumeLowEvents(event, action)
+		consumeLowEvents(event, action)	//处理低优先级事件
 	}
 }
 
@@ -60,7 +60,7 @@ func consumeHighEvents(event *cmodel.Event, action *api.Action) {
 
 	// <=P2 才发送短信
 	if event.Priority() < 3 {
-		redi.WriteSms(phones, smsContent)
+		redi.WriteSms(phones, smsContent)//入SMS队列
 	}
 
 	redi.WriteIM(ims, imContent)
@@ -82,7 +82,7 @@ func consumeLowEvents(event *cmodel.Event, action *api.Action) {
 	ParseUserIm(event, action)
 	ParseUserMail(event, action)
 }
-
+//通过API查询维护人员的phones.emails,IM
 func ParseUserSms(event *cmodel.Event, action *api.Action) {
 	userMap := api.GetUsers(action.Uic)
 

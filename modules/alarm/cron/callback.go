@@ -27,7 +27,7 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/alarm/redi"
 	"github.com/toolkits/net/httplib"
 )
-
+//callback配置处理
 func HandleCallback(event *model.Event, action *api.Action) {
 
 	teams := action.Uic

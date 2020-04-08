@@ -24,20 +24,21 @@ import (
 	eventmodel "github.com/open-falcon/falcon-plus/modules/alarm/model/event"
 	log "github.com/sirupsen/logrus"
 )
-
+//从redis读取高优先级事件信息
+//解析事件的信息(action/callback/teams/phone,im,mail)
 func ReadHighEvent() {
-	queues := g.Config().Redis.HighQueues
+	queues := g.Config().Redis.HighQueues //默认是p0,p1,p2
 	if len(queues) == 0 {
 		return
 	}
 
 	for {
-		event, err := popEvent(queues)
+		event, err := popEvent(queues) //事件出列
 		if err != nil {
 			time.Sleep(time.Second)
 			continue
 		}
-		consume(event, true)
+		consume(event, true)//处理事件
 	}
 }
 
@@ -56,7 +57,7 @@ func ReadLowEvent() {
 		consume(event, false)
 	}
 }
-
+//时间出列并且入库保存事件
 func popEvent(queues []string) (*cmodel.Event, error) {
 
 	count := len(queues)
@@ -68,9 +69,9 @@ func popEvent(queues []string) (*cmodel.Event, error) {
 	// set timeout 0
 	params[count] = 0
 
-	rc := g.RedisConnPool.Get()
+	rc := g.RedisConnPool.Get() //连接redis
 	defer rc.Close()
-
+	//brpop多队列事件
 	reply, err := redis.Strings(rc.Do("BRPOP", params...))
 	if err != nil {
 		log.Errorf("get alarm event from redis fail: %v", err)
@@ -78,6 +79,7 @@ func popEvent(queues []string) (*cmodel.Event, error) {
 	}
 
 	var event cmodel.Event
+	//JSON为event结构
 	err = json.Unmarshal([]byte(reply[1]), &event)
 	if err != nil {
 		log.Errorf("parse alarm event fail: %v", err)
@@ -87,6 +89,7 @@ func popEvent(queues []string) (*cmodel.Event, error) {
 	log.Debugf("pop event: %s", event.String())
 
 	//insert event into database
+	//插入到mysql的数据库中
 	eventmodel.InsertEvent(&event)
 	// events no longer saved in memory
 

@@ -141,12 +141,14 @@ func combineIM() {
 }
 
 func combineSms() {
-	dtos := popAllSmsDto()
+	dtos := popAllSmsDto() //SMS队列"/queue/user/sms" prop所有事件短信内容信息
 	count := len(dtos)
 	if count == 0 {
 		return
 	}
-
+	//整理事件信息至内存map
+	//key:priority,status,phone,metric
+	//value:pop原事件信息
 	dtoMap := make(map[string][]*SmsDto)
 	for i := 0; i < count; i++ {
 		key := fmt.Sprintf("%d%s%s%s", dtos[i].Priority, dtos[i].Status, dtos[i].Phone, dtos[i].Metric)
@@ -156,7 +158,7 @@ func combineSms() {
 			dtoMap[key] = []*SmsDto{dtos[i]}
 		}
 	}
-
+	//如果有同一个Key,有多条SMS内容则合并为一条提供link链接
 	for _, arr := range dtoMap {
 		size := len(arr)
 		if size == 1 {
